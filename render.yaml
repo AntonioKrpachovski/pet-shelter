@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: shelter-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: MONGO_URI
+        fromDatabase:
+          name: shelter-mongodb
+          property: connectionString
+      - key: MONGO_DB
+        value: shelter
+    healthCheckPath: /actuator/health
+
+  - type: web
+    name: shelter-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    envVars:
+      - key: BACKEND_URL
+        fromService:
+          name: shelter-backend
+          type: web
+          property: host
+
+databases:
+  - name: shelter-mongodb
+    type: mongodb
