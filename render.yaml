@@ -1,6 +1,7 @@
 services:
   # MongoDB service
-  - type: private
+  - type: web
+    public: false
     name: shelter-mongodb
     runtime: image
     image:
