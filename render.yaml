@@ -1,4 +1,19 @@
 services:
+  # MongoDB service
+  - type: private
+    name: shelter-mongodb
+    runtime: image
+    image:
+      url: mongo:7.0
+    envVars:
+      - key: MONGO_INITDB_DATABASE
+        value: shelter
+    disk:
+      name: mongo-data
+      mountPath: /data/db
+      sizeGB: 10
+
+  # Backend service
   - type: web
     name: shelter-backend
     runtime: docker
@@ -6,13 +21,12 @@ services:
     dockerContext: ./backend
     envVars:
       - key: MONGO_URI
-        fromDatabase:
-          name: shelter-mongodb
-          property: connectionString
+        value: mongodb://shelter-mongodb:27017/shelter
       - key: MONGO_DB
         value: shelter
     healthCheckPath: /actuator/health
 
+  # Frontend service
   - type: web
     name: shelter-frontend
     runtime: docker
@@ -24,7 +38,3 @@ services:
           name: shelter-backend
           type: web
           property: host
-
-databases:
-  - name: shelter-mongodb
-    type: mongodb
