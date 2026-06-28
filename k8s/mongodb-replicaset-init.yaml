@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: mongodb-replicaset-init
+  namespace: shelter
+spec:
+  backoffLimit: 10
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mongo-init
+          image: mongo:7.0
+          command:
+            - bash
+            - "-c"
+            - |
+              echo "Waiting for all MongoDB pods to be ready..."
+              sleep 30
+
+              until mongosh --host mongodb-0.mongodb-service --port 27017 --eval "db.adminCommand('ping')" &>/dev/null; do
+                echo "Waiting for mongodb-0..."
+                sleep 5
+              done
+              echo "mongodb-0 is ready"
+
+              until mongosh --host mongodb-1.mongodb-service --port 27017 --eval "db.adminCommand('ping')" &>/dev/null; do
+                echo "Waiting for mongodb-1..."
+                sleep 5
+              done
+              echo "mongodb-1 is ready"
+
+              until mongosh --host mongodb-2.mongodb-service --port 27017 --eval "db.adminCommand('ping')" &>/dev/null; do
+                echo "Waiting for mongodb-2..."
+                sleep 5
+              done
+              echo "mongodb-2 is ready"
+
+              echo "Checking if replica set already initialized..."
+              STATUS=$(mongosh --host mongodb-0.mongodb-service --port 27017 --eval "rs.status().ok" --quiet 2>/dev/null || echo "0")
+
+              if [ "$STATUS" = "1" ]; then
+                echo "Replica set already initialized, skipping..."
+              else
+                echo "Initializing replica set..."
+                mongosh --host mongodb-0.mongodb-service --port 27017 --eval "
+                  rs.initiate({
+                    _id: 'rs0',
+                    members: [
+                      { _id: 0, host: 'mongodb-0.mongodb-service:27017', priority: 2 },
+                      { _id: 1, host: 'mongodb-1.mongodb-service:27017', priority: 1 },
+                      { _id: 2, host: 'mongodb-2.mongodb-service:27017', priority: 1 }
+                    ]
+                  })
+                "
+                echo "Replica set initialized!"
+              fi
