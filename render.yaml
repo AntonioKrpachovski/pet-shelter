@@ -1,7 +1,6 @@
 services:
   # MongoDB service
-  - type: web
-    public: false
+  - type: worker
     name: shelter-mongodb
     runtime: image
     image:
@@ -13,6 +12,7 @@ services:
       name: mongo-data
       mountPath: /data/db
       sizeGB: 10
+
 
   # Backend service
   - type: web
