@@ -51,7 +51,7 @@ docker compose up --build
 curl -X POST http://localhost:8080/api/animals/seed
 ```
 
-App available at: http://localhost
+App available at: http://localhost:3000
 
 ## Kubernetes
 
@@ -102,3 +102,7 @@ Required GitHub secrets:
 | GET    | /api/contact                  | List contact messages      |
 | POST   | /api/contact                  | Send contact message       |
 | PATCH  | /api/contact/:id/read         | Mark message as read       |
+
+### Environment Variables
+Copy `.env.example` to `.env` and adjust the values
+
