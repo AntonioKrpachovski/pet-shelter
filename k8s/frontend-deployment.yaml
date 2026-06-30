@@ -18,6 +18,9 @@ spec:
           image: antoniokr2/shelter-frontend:latest
           ports:
             - containerPort: 80
+          env:
+            - name: BACKEND_URL
+              value: "http://backend-service:8080"
           resources:
             requests:
               memory: "64Mi"
